@@ -9,7 +9,6 @@ public class InfoText : MonoBehaviour
 	private Text text;
 
 	public int[] Eular = { 0, 0, 0 };
-	public int[] Motors = { 0, 0, 0, 0 };
 	public int[] Gyro = { 0, 0, 0 };
 	public int[] RCCommand = { 0, 0, 0, 0 };
 	public int Altitude = 0;
@@ -26,14 +25,10 @@ public class InfoText : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		text.text = string.Format("Eular:\nRoll: {0}\nPitch: {1}\nYaw: {2}\n\nMotor1: {3}\nMotor2: {4}\nMotor3: {5}\nMotor4: {6}\n\nAltitude: {7} m\n\nGyro:\nRoll: {8}\nPitch: {9}\nYaw: {10}\n\nVelZ: {11} m/s\n\n GPS:\nBearing: {12}\nLat: {13}\nLon: {14}\nRCCommand: {15}, {16}, {17}, {18}",
+		text.text = string.Format("Eular:\nRoll: {0}\nPitch: {1}\nYaw: {2}\n\nAltitude: {3} m\n\nGyro:\nRoll: {4}\nPitch: {5}\nYaw: {6}\n\nVelZ: {7} m/s\n\n GPS:\nBearing: {8}\nLat: {9}\nLon: {10}\nRCCommand: {11}, {12}, {13}, {14}",
 		Eular[0] / 10F,
 		Eular[1] / 10F,
 		Eular[2] / 10F,
-		Motors[0],
-		Motors[1],
-		Motors[2],
-		Motors[3],
 		Altitude / 100F,
 		Gyro[0],
 		Gyro[1],

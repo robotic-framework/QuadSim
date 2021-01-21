@@ -11,20 +11,20 @@ public class Motor : MonoBehaviour
 
 	private Rigidbody _rigidbody;
 
-    private int _command;
+    private int _throttle;
 
     public bool Inverse;
 
-    public int Command
+    public int Throttle
     {
         get
         {
-            return _command;
+            return _throttle;
         }
 
         set
         {
-            _command = Mathf.Clamp(value, MinCommand, MaxCommand);
+            _throttle = Mathf.Clamp(value, MinCommand, MaxCommand);
         }
     }
 
@@ -37,7 +37,7 @@ public class Motor : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float force = _command / 100F - 7;
+        float force = _throttle / 100F - 7;
 	    _rigidbody.AddRelativeForce(new Vector3(0, 1, 0) * force);
 
         Vector3 torque = Vector3.up;

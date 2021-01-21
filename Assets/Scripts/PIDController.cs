@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PIDController : MonoBehaviour
 {
@@ -15,6 +16,14 @@ public class PIDController : MonoBehaviour
 	private GPSSimulator _gps;
 	private RCController _rc;
 	private InfoText _info;
+    private Slider _sliderMotor1;
+    private Slider _sliderMotor2;
+    private Slider _sliderMotor3;
+    private Slider _sliderMotor4;
+    private Text _textMotor1;
+    private Text _textMotor2;
+    private Text _textMotor3;
+    private Text _textMotor4;
 
 	private int[] _eularArray = { 0, 0, 0 };
 	private int[] _gyroArray = { 0, 0, 0 };
@@ -27,7 +36,6 @@ public class PIDController : MonoBehaviour
 	private int[,] deltaGyro = { { 0, 0, 0 }, { 0, 0, 0 } };
 	private int[] commandOffset = { 0, 0, 0, 0, 0 }; // roll, pitch, yaw, althold, velZ
 
-	private int[] rcCommand = { 0, 0, 0, 0 };
 	// x = Roll, y = Yaw, z = Pitch
 	public int PLevel;
 	public int ILevel;
@@ -35,11 +43,9 @@ public class PIDController : MonoBehaviour
 	public int PAltHold;
 	public int IAltHold;
 	public int DAltHold;
-	public int DesiredAltHold;
 	public int PVelZ;
 	public int IVelZ;
 	public int DVelZ;
-	public int DesiredVelZ;
 
 	// Start is called before the first frame update
 	void Start()
@@ -65,6 +71,24 @@ public class PIDController : MonoBehaviour
 
 		GameObject info = GameObject.Find("InfoText");
 		_info = info.GetComponent<InfoText>();
+
+        GameObject slider = GameObject.Find("sliderMotor1");
+        _sliderMotor1 = slider.GetComponent<Slider>();
+        slider = GameObject.Find("sliderMotor2");
+        _sliderMotor2 = slider.GetComponent<Slider>();
+        slider = GameObject.Find("sliderMotor3");
+        _sliderMotor3 = slider.GetComponent<Slider>();
+        slider = GameObject.Find("sliderMotor4");
+        _sliderMotor4 = slider.GetComponent<Slider>();
+
+        GameObject text = GameObject.Find("textMotor1");
+        _textMotor1 = text.GetComponent<Text>();
+        text = GameObject.Find("textMotor2");
+        _textMotor2 = text.GetComponent<Text>();
+        text = GameObject.Find("textMotor3");
+        _textMotor3 = text.GetComponent<Text>();
+        text = GameObject.Find("textMotor4");
+        _textMotor4 = text.GetComponent<Text>();
 	}
 
 	// Update is called once per frame
@@ -78,7 +102,6 @@ public class PIDController : MonoBehaviour
 		_info.Altitude = _imu.Altitude;
 		_info.VelZ = _imu.VelZ;
         _info.RCCommand = _rc.RCCommand;
-        rcCommand = _rc.RCCommand;
 
 		apply();
 		mixMotor();
@@ -88,11 +111,11 @@ public class PIDController : MonoBehaviour
 	{
 		int PTerm = 0, ITerm = 0, DTerm = 0, PTermACC, ITermACC;
 		int limit = 0;
-		int prop = Mathf.Min(Mathf.Max(Mathf.Abs(rcCommand[1]), Mathf.Abs(rcCommand[0])), 512);
+		int prop = Mathf.Min(Mathf.Max(Mathf.Abs(_rc.RCCommand[RCController.Pitch]), Mathf.Abs(_rc.RCCommand[RCController.Roll])), 512);
 		// Roll and Pitch
 		for (int axis = 0; axis < 2; axis++)
 		{
-			int rcLevel = rcCommand[axis] << 1;
+			int rcLevel = _rc.RCCommand[axis] << 1;
 			int errorAngle = Mathf.Clamp(rcLevel + _gps.Angle[axis], -500, 500) - _eularArray[axis];
 			errorAngleI[axis] = Mathf.Clamp(errorAngleI[axis] + errorAngle, -10000, 10000);
 
@@ -119,7 +142,7 @@ public class PIDController : MonoBehaviour
 
 		// Yaw
 		{
-			int rcLevel = (rcCommand[RCController.Yaw] * 30) >> 5;
+			int rcLevel = (_rc.RCCommand[RCController.Yaw] * 30) >> 5;
 			int error = rcLevel - _gyroArray[2];
 			errorGyroI_YAW += error * ILevel;
 			errorGyroI_YAW = Mathf.Clamp(errorGyroI_YAW, 2 - (1 << 28), -2 + (1 << 28));
@@ -136,8 +159,9 @@ public class PIDController : MonoBehaviour
 		}
 
 		// AltHold
+        if (_rc.AltHold)
 		{
-			int errorAlt = Mathf.Clamp(DesiredAltHold - _imu.Altitude, -300, 300);
+			int errorAlt = Mathf.Clamp(_rc.DesiredAltHold - _imu.Altitude, -300, 300);
 			errorAlt = _applyDeadband(errorAlt, 10);
 			PTerm = Mathf.Clamp((PAltHold * errorAlt) >> 7, -150, 150);
 
@@ -151,10 +175,10 @@ public class PIDController : MonoBehaviour
 		}
 
 		// VelZ
-		if (Mathf.Abs(DesiredAltHold - _imu.Altitude) > 100)
+		if (_rc.VelZHold && (Mathf.Abs(_rc.DesiredAltHold - _imu.Altitude) > 100))
 		{
 			int velZ = _imu.VelZ;
-			int errorVel = Mathf.Clamp(DesiredVelZ - Mathf.Abs(velZ), -500, 500);
+			int errorVel = Mathf.Clamp(_rc.DesiredVelZ - Mathf.Abs(velZ), -500, 500);
 			PTerm = Mathf.Clamp((PVelZ * errorVel) >> 6, -200, 200);
 
 			errorVelZI += (IVelZ * errorVel) >> 5;
@@ -172,21 +196,31 @@ public class PIDController : MonoBehaviour
 
 	private void mixMotor()
 	{
-		_motor1.Command = _pidMix(-1, 1, -1);
-		_motor2.Command = _pidMix(-1, -1, 1);
-		_motor3.Command = _pidMix(1, 1, 1);
-		_motor4.Command = _pidMix(1, -1, -1);
+		_motor1.Throttle = _pidMix(-1, 1, -1);
+		_motor2.Throttle = _pidMix(-1, -1, 1);
+		_motor3.Throttle = _pidMix(1, 1, 1);
+		_motor4.Throttle = _pidMix(1, -1, -1);
 
-		_info.Motors[0] = _motor1.Command;
-		_info.Motors[1] = _motor2.Command;
-		_info.Motors[2] = _motor3.Command;
-		_info.Motors[3] = _motor4.Command;
+		_textMotor1.text = _motor1.Throttle.ToString();
+		_textMotor2.text = _motor2.Throttle.ToString();
+		_textMotor3.text = _motor3.Throttle.ToString();
+		_textMotor4.text = _motor4.Throttle.ToString();
+
+        _sliderMotor1.SetValueWithoutNotify(_throttleScale(_motor1.Throttle));
+        _sliderMotor2.SetValueWithoutNotify(_throttleScale(_motor2.Throttle));
+        _sliderMotor3.SetValueWithoutNotify(_throttleScale(_motor3.Throttle));
+        _sliderMotor4.SetValueWithoutNotify(_throttleScale(_motor4.Throttle));
 	}
 
 	private int _pidMix(int x, int y, int z)
 	{
-		return rcCommand[RCController.Throttle] + commandOffset[RCController.Roll] * x + commandOffset[RCController.Pitch] * y + commandOffset[RCController.Yaw] * z + commandOffset[RCController.Throttle] + commandOffset[4];
+		return _rc.RCCommand[RCController.Throttle] + commandOffset[RCController.Roll] * x + commandOffset[RCController.Pitch] * y + commandOffset[RCController.Yaw] * z + commandOffset[RCController.Throttle] + commandOffset[4];
 	}
+
+    private float _throttleScale(int throttle)
+    {
+        return (float)(throttle - RCController.MinThrottleCommand) / (float)(RCController.MaxThrottleCommand - RCController.MinThrottleCommand);
+    }
 
 	private int _applyDeadband(int val, int deadband)
 	{
