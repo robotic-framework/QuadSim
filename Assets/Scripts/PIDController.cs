@@ -155,7 +155,7 @@ public class PIDController : MonoBehaviour
 			limit = GYRO_P_MAX - DLevel;
 			PTerm = Mathf.Clamp(PTerm, -limit, limit);
 			ITerm = Mathf.Clamp(errorGyroI_YAW >> 13, -GYRO_I_MAX, GYRO_I_MAX);
-			commandOffset[2] = PTerm + ITerm;
+			commandOffset[RCController.Yaw] = PTerm + ITerm;
 		}
 
 		// AltHold
@@ -171,7 +171,7 @@ public class PIDController : MonoBehaviour
 
 			int velZ = _imu.VelZ;
 			DTerm = Mathf.Clamp(DAltHold * velZ >> 4, -150, 150);
-			commandOffset[3] = PTerm + ITerm - DTerm;
+			commandOffset[RCController.Throttle] = PTerm + ITerm - DTerm;
 		}
 
 		// VelZ
@@ -214,7 +214,12 @@ public class PIDController : MonoBehaviour
 
 	private int _pidMix(int x, int y, int z)
 	{
-		return _rc.RCCommand[RCController.Throttle] + commandOffset[RCController.Roll] * x + commandOffset[RCController.Pitch] * y + commandOffset[RCController.Yaw] * z + commandOffset[RCController.Throttle] + commandOffset[4];
+		return _rc.RCCommand[RCController.Throttle] +
+            commandOffset[RCController.Roll] * x +
+            commandOffset[RCController.Pitch] * y +
+            commandOffset[RCController.Yaw] * z +
+            commandOffset[RCController.Throttle] +
+            commandOffset[4];
 	}
 
     private float _throttleScale(int throttle)
