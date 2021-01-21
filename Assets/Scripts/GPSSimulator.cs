@@ -7,11 +7,13 @@ public class GPSSimulator : MonoBehaviour
 {
 	public double Lat;
 	public double Lon;
+	public float Bearing;
+	public int[] Angle = { 0, 0 };
 
 	private float _lastPosX;
 	private float _lastPosY;
-	private float _startPosX;
-	private float _startPosY;
+	private float _homePosX;
+	private float _homePosY;
 	private float _lastTime;
 
 	// earth radius in meters
@@ -20,9 +22,8 @@ public class GPSSimulator : MonoBehaviour
 
 	void Start()
 	{
+		_resetHome();
 		_resetLast();
-		_startPosX = transform.position.x;
-		_startPosY = transform.position.z;
 
 		GameObject info = GameObject.Find("InfoText");
 		_info = info.GetComponent<InfoText>();
@@ -38,36 +39,7 @@ public class GPSSimulator : MonoBehaviour
 		}
 
 		// pos
-		float offsetX = transform.position.x - _startPosX;
-		float offsetY = transform.position.z - _startPosY;
-		float distance = Mathf.Sqrt(Mathf.Pow(offsetX, 2) + Mathf.Pow(offsetY, 2));
-		float bearing = -Mathf.Atan2(offsetY, offsetX);
-		bearing = bearing / Mathf.PI * 180 + 90;
-		if (bearing < 0)
-		{
-			bearing += 360;
-		}
-		float bearingRad = bearing / 180 * Mathf.PI;
-		_info.GPSBearing = bearing;
-
-		double distRatio = distance / earthRadius;
-		double distRatioSin = Math.Sin(distRatio);
-		double distRatioCos = Math.Cos(distRatio);
-
-		double startLatRad = Lat / 180 * Mathf.PI;
-		double startLonRad = Lon / 180 * Mathf.PI;
-		double startLatSin = Math.Sin(startLatRad);
-		double startLatCos = Math.Cos(startLatRad);
-
-		double endLatRad = Math.Asin((startLatSin * distRatioCos) + (startLatCos * distRatioSin * Math.Cos(bearingRad)));
-		double endLonRad = startLonRad +
-            Math.Atan2(Math.Sin(bearingRad) * distRatioSin * startLatCos,
-			distRatioCos - startLatSin * Math.Sin(endLatRad));
-
-		Lat = endLatRad / Math.PI * 180;
-		Lon = endLonRad / Math.PI * 180;
-		_info.GPSLat = Lat;
-		_info.GPSLon = Lon;
+		_calcPos();
 
 		// GPS bearing
 		// offsetX = transform.position.x - _lastPosX;
@@ -82,10 +54,67 @@ public class GPSSimulator : MonoBehaviour
 		_resetLast();
 	}
 
+	private void _calcPos()
+	{
+		float offsetX = transform.position.x - _homePosX;
+		float offsetY = transform.position.z - _homePosY;
+		float distance = Mathf.Sqrt(Mathf.Pow(offsetX, 2) + Mathf.Pow(offsetY, 2));
+		float bearing = -Mathf.Atan2(offsetY, offsetX);
+		bearing = bearing / Mathf.PI * 180 + 90;
+		if (bearing < 0)
+		{
+			bearing += 360;
+		}
+		float bearingRad = bearing / 180 * Mathf.PI;
+		double distRatio = distance / earthRadius;
+		double distRatioSin = Math.Sin(distRatio);
+		double distRatioCos = Math.Cos(distRatio);
+
+		double startLatRad = Lat / 180 * Mathf.PI;
+		double startLonRad = Lon / 180 * Mathf.PI;
+		double startLatSin = Math.Sin(startLatRad);
+		double startLatCos = Math.Cos(startLatRad);
+
+		double endLatRad = Math.Asin((startLatSin * distRatioCos) + (startLatCos * distRatioSin * Math.Cos(bearingRad)));
+		double endLonRad = startLonRad +
+			Math.Atan2(Math.Sin(bearingRad) * distRatioSin * startLatCos,
+			distRatioCos - startLatSin * Math.Sin(endLatRad));
+
+		Lat = endLatRad / Math.PI * 180;
+		Lon = endLonRad / Math.PI * 180;
+		_info.GPSLat = Lat;
+		_info.GPSLon = Lon;
+	}
+
+	private void _calcBearing()
+	{
+		float offsetX = transform.position.x - _lastPosX;
+		float offsetY = transform.position.z - _lastPosY;
+		if (offsetX < 0.2 && offsetY < 0.2)
+		{
+			return;
+		}
+		Bearing = -Mathf.Atan2(offsetY, offsetX);
+		Bearing = Bearing / Mathf.PI * 180 + 90;
+		if (Bearing < 0)
+		{
+			Bearing += 360;
+		}
+		_info.GPSBearing = Bearing;
+
+		_resetLast();
+	}
+
 	private void _resetLast()
 	{
 		_lastPosX = transform.position.x;
 		_lastPosY = transform.position.z;
 		_lastTime = Time.time;
+	}
+
+	private void _resetHome()
+	{
+		_homePosX = transform.position.x;
+		_homePosY = transform.position.z;
 	}
 }
