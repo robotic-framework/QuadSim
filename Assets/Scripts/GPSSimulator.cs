@@ -25,8 +25,7 @@ public class GPSSimulator : MonoBehaviour
 		_resetHome();
 		_resetLast();
 
-		GameObject info = GameObject.Find("InfoText");
-		_info = info.GetComponent<InfoText>();
+		_info = GameObject.Find("InfoText").GetComponent<InfoText>();
 	}
 
 	// Update is called once per frame

@@ -53,25 +53,14 @@ public class RCController : MonoBehaviour
         DesiredAltHold = 0;
         DesiredVelZ = 50;
 
-        GameObject imu = GameObject.Find("IMU");
-        _imu = imu.GetComponent<IMUController>();
+        _imu = GameObject.Find("IMU").GetComponent<IMUController>();
+		_throttle = GameObject.Find("sliderThrottle").GetComponent<Slider>();
+		_roll = GameObject.Find("sliderRoll").GetComponent<Slider>();
+		_pitch = GameObject.Find("sliderPitch").GetComponent<Slider>();
+		_yaw = GameObject.Find("sliderYaw").GetComponent<Slider>();
 
-		GameObject slider = GameObject.Find("sliderThrottle");
-		_throttle = slider.GetComponent<Slider>();
-
-		slider = GameObject.Find("sliderRoll");
-		_roll = slider.GetComponent<Slider>();
-
-		slider = GameObject.Find("sliderPitch");
-		_pitch = slider.GetComponent<Slider>();
-
-		slider = GameObject.Find("sliderYaw");
-		_yaw = slider.GetComponent<Slider>();
-
-		GameObject toggle = GameObject.Find("ToggleAltHold");
-		_altHold = toggle.GetComponent<Toggle>();
-		toggle = GameObject.Find("ToggleVelZHold");
-		_velZHold = toggle.GetComponent<Toggle>();
+		_altHold = GameObject.Find("ToggleAltHold").GetComponent<Toggle>();
+		_velZHold = GameObject.Find("ToggleVelZHold").GetComponent<Toggle>();
 
         _desiredAltHold = GameObject.Find("TextDesiredAltHold").GetComponent<Text>();
         _desiredVelZHold = GameObject.Find("TextDesiredVelZHold").GetComponent<Text>();

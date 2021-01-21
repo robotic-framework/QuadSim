@@ -50,45 +50,26 @@ public class PIDController : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
 	{
-		GameObject motor = GameObject.Find("Motor1");
-		_motor1 = motor.GetComponent<Motor>();
+		_motor1 = GameObject.Find("Motor1").GetComponent<Motor>();
+		_motor2 = GameObject.Find("Motor2").GetComponent<Motor>();
+		_motor3 = GameObject.Find("Motor3").GetComponent<Motor>();
+		_motor4 = GameObject.Find("Motor4").GetComponent<Motor>();
 
-		motor = GameObject.Find("Motor2");
-		_motor2 = motor.GetComponent<Motor>();
+		_imu = GameObject.Find("IMU").GetComponent<IMUController>();
+		_gps = GameObject.Find("GPS").GetComponent<GPSSimulator>();
+		_rc = GameObject.Find("RC").GetComponent<RCController>();
 
-		motor = GameObject.Find("Motor3");
-		_motor3 = motor.GetComponent<Motor>();
+		_info = GameObject.Find("InfoText").GetComponent<InfoText>();
 
-		motor = GameObject.Find("Motor4");
-		_motor4 = motor.GetComponent<Motor>();
+        _sliderMotor1 = GameObject.Find("sliderMotor1").GetComponent<Slider>();
+        _sliderMotor2 = GameObject.Find("sliderMotor2").GetComponent<Slider>();
+        _sliderMotor3 = GameObject.Find("sliderMotor3").GetComponent<Slider>();
+        _sliderMotor4 = GameObject.Find("sliderMotor4").GetComponent<Slider>();
 
-		GameObject imu = GameObject.Find("IMU");
-		_imu = imu.GetComponent<IMUController>();
-		GameObject gps = GameObject.Find("GPS");
-		_gps = gps.GetComponent<GPSSimulator>();
-		GameObject rc = GameObject.Find("RC");
-		_rc = rc.GetComponent<RCController>();
-
-		GameObject info = GameObject.Find("InfoText");
-		_info = info.GetComponent<InfoText>();
-
-        GameObject slider = GameObject.Find("sliderMotor1");
-        _sliderMotor1 = slider.GetComponent<Slider>();
-        slider = GameObject.Find("sliderMotor2");
-        _sliderMotor2 = slider.GetComponent<Slider>();
-        slider = GameObject.Find("sliderMotor3");
-        _sliderMotor3 = slider.GetComponent<Slider>();
-        slider = GameObject.Find("sliderMotor4");
-        _sliderMotor4 = slider.GetComponent<Slider>();
-
-        GameObject text = GameObject.Find("textMotor1");
-        _textMotor1 = text.GetComponent<Text>();
-        text = GameObject.Find("textMotor2");
-        _textMotor2 = text.GetComponent<Text>();
-        text = GameObject.Find("textMotor3");
-        _textMotor3 = text.GetComponent<Text>();
-        text = GameObject.Find("textMotor4");
-        _textMotor4 = text.GetComponent<Text>();
+        _textMotor1 = GameObject.Find("textMotor1").GetComponent<Text>();
+        _textMotor2 = GameObject.Find("textMotor2").GetComponent<Text>();
+        _textMotor3 = GameObject.Find("textMotor3").GetComponent<Text>();
+        _textMotor4 = GameObject.Find("textMotor4").GetComponent<Text>();
 	}
 
 	// Update is called once per frame
