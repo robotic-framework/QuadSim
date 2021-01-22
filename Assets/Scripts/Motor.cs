@@ -5,10 +5,6 @@ using UnityEngine;
 public class Motor : MonoBehaviour
 {
 
-    private const int StandbyCommand = 1000;
-    private const int MinCommand = 1150;
-    private const int MaxCommand = 1850;
-
 	private Rigidbody _rigidbody;
 
     private int _throttle;
@@ -24,7 +20,7 @@ public class Motor : MonoBehaviour
 
         set
         {
-            _throttle = Mathf.Clamp(value, MinCommand, MaxCommand);
+            _throttle = Mathf.Clamp(value, RCController.MinThrottleCommand, RCController.MaxThrottleCommand);
         }
     }
 

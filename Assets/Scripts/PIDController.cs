@@ -82,7 +82,6 @@ public class PIDController : MonoBehaviour
 		_info.Gyro = _gyroArray;
 		_info.Altitude = _imu.Altitude;
 		_info.VelZ = _imu.VelZ;
-        _info.RCCommand = _rc.RCCommand;
 
 		apply();
 		mixMotor();

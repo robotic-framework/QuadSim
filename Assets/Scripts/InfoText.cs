@@ -10,12 +10,13 @@ public class InfoText : MonoBehaviour
 
 	public int[] Eular = { 0, 0, 0 };
 	public int[] Gyro = { 0, 0, 0 };
-	public int[] RCCommand = { 0, 0, 0, 0 };
 	public int Altitude = 0;
 	public int VelZ = 0;
 	public float GPSBearing = 0;
 	public double GPSLat = 0;
 	public double GPSLon = 0;
+    public float DistanceToHome;
+    public float DirectionToHome;
 
 	void Start()
 	{
@@ -25,7 +26,7 @@ public class InfoText : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		text.text = string.Format("Eular:\nRoll: {0}\nPitch: {1}\nYaw: {2}\n\nAltitude: {3} m\n\nGyro:\nRoll: {4}\nPitch: {5}\nYaw: {6}\n\nVelZ: {7} m/s\n\n GPS:\nBearing: {8}\nLat: {9}\nLon: {10}\nRCCommand: {11}, {12}, {13}, {14}",
+		text.text = string.Format("Eular:\nRoll: {0}\nPitch: {1}\nYaw: {2}\n\nAltitude: {3} m\n\nGyro:\nRoll: {4}\nPitch: {5}\nYaw: {6}\n\nVelZ: {7} m/s\n\n GPS:\nBearing: {8}\nLat: {9}\nLon: {10}\nDistanceToHome: {11}\nDirectionToHome: {12}",
 		Eular[0] / 10F,
 		Eular[1] / 10F,
 		Eular[2] / 10F,
@@ -37,6 +38,7 @@ public class InfoText : MonoBehaviour
 		GPSBearing,
 		GPSLat,
 		GPSLon,
-        RCCommand[0], RCCommand[1], RCCommand[2], RCCommand[3]);
+        DistanceToHome,
+        DirectionToHome);
 	}
 }

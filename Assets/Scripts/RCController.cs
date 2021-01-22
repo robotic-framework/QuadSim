@@ -15,6 +15,7 @@ public class RCController : MonoBehaviour
 	public const int MaxAttitudeCommand = 500;
 
     private IMUController _imu;
+    private GPSSimulator _gps;
 	private Slider _throttle;
 	private Slider _roll;
 	private Slider _pitch;
@@ -54,6 +55,7 @@ public class RCController : MonoBehaviour
         DesiredVelZ = 50;
 
         _imu = GameObject.Find("IMU").GetComponent<IMUController>();
+        _gps = GameObject.Find("GPS").GetComponent<GPSSimulator>();
 		_throttle = GameObject.Find("sliderThrottle").GetComponent<Slider>();
 		_roll = GameObject.Find("sliderRoll").GetComponent<Slider>();
 		_pitch = GameObject.Find("sliderPitch").GetComponent<Slider>();
@@ -82,6 +84,11 @@ public class RCController : MonoBehaviour
 		{
 			VelZHold = !VelZHold;
 			_velZHold.enabled = VelZHold;
+		}
+
+		if (Input.GetKeyUp(KeyCode.N))
+		{
+			_gps.StartNav();
 		}
 
         if (!AltHold)
