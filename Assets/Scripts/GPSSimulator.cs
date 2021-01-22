@@ -41,22 +41,18 @@ public class GPSSimulator : MonoBehaviour
 		_calcPos();
 
 		// GPS bearing
-		// offsetX = transform.position.x - _lastPosX;
-		// offsetY = transform.position.z - _lastPosY;
-		// if (offsetX < 0.2 && offsetY < 0.2)
-		// {
-		//     return;
-		// }
-		// bearing = Mathf.Atan2(offsetY, offsetX);
-		// _info.GPSBearing = bearing / Mathf.PI * 180;
-
-		_resetLast();
+		_calcBearing();
 	}
 
 	private void _calcPos()
 	{
 		float offsetX = transform.position.x - _homePosX;
 		float offsetY = transform.position.z - _homePosY;
+        if (offsetX == 0 && offsetY == 0)
+        {
+            return;
+        }
+        
 		float distance = Mathf.Sqrt(Mathf.Pow(offsetX, 2) + Mathf.Pow(offsetY, 2));
 		float bearing = -Mathf.Atan2(offsetY, offsetX);
 		bearing = bearing / Mathf.PI * 180 + 90;
