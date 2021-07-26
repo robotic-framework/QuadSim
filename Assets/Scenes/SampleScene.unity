@@ -5732,12 +5732,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Eular: 000000000000000000000000
   Gyro: 000000000000000000000000
-  RCCommand: 00000000000000000000000000000000
   Altitude: 0
   VelZ: 0
   GPSBearing: 0
   GPSLat: 0
   GPSLon: 0
+  DistanceToHome: 0
+  DirectionToHome: 0
 --- !u!114 &1930794289
 MonoBehaviour:
   m_ObjectHideFlags: 0

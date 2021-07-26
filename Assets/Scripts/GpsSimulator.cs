@@ -3,44 +3,44 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-enum NavState
+public enum NavState
 {
-	NAV_STATE_NONE,
-	NAV_STATE_RTH_START,
-	NAV_STATE_RTH_ENROUTE,
-	NAV_STATE_HOLD_INFINIT,
-	NAV_STATE_HOLD_TIMED,
-	NAV_STATE_WP_ENROUTE,
-	NAV_STATE_PROCESS_NEXT,
-	NAV_STATE_DO_JUMP,
-	NAV_STATE_LAND_START,
-	NAV_STATE_LAND_IN_PROGRESS,
-	NAV_STATE_LANDED,
-	NAV_STATE_LAND_SETTLE,
-	NAV_STATE_LAND_START_DESCENT
+	NavStateNone,
+	NavStateRthStart,
+	NavStateRthEnroute,
+	NavStateHoldInfinity,
+	NavStateHoldTimed,
+	NavStateWpEnroute,
+	NavStateProcessNext,
+	NavStateDoJump,
+	NavStateLandStart,
+	NavStateLandInProgress,
+	NavStateLanded,
+	NavStateLandSettle,
+	NavStateLandStartDescent
 }
 
-public enum GPSMode
+public enum GpsMode
 {
-	GPS_MODE_NONE,
-	GPS_MODE_HOLD,
-	GPS_MODE_RTH,
-	GPS_MODE_NAV
+	GpsModeNone,
+	GpsModeHold,
+	GpsModeRth,
+	GpsModeNav
 }
 
-public class GPSSimulator : MonoBehaviour
+public class GpsSimulator : MonoBehaviour
 {
 	public const short LAT = 0;
 	public const short LON = 1;
-    public const float KmPerDegree = 111.318845f;
+	private const float KmPerDegree = 111.318845f;
 
 	public double Lat;
 	public double Lon;
 	public float Bearing;
 	public int[] Angle = { 0, 0 };
-	public bool Nav { get; set; }
-	public GPSMode GPSMode { get; set; }
-	private NavState navState;
+	public bool nav { get; set; }
+	public GpsMode gpsMode { get; set; }
+	private NavState _navState;
 
 	private float _lastPosX;
 	private float _lastPosY;
@@ -50,26 +50,26 @@ public class GPSSimulator : MonoBehaviour
 
 	float scaleLonDown;
     bool isSetHome = false;
-	private int[] posGPS = { 0, 0 };
-	private int[] homeGPS = { 0, 0 };
-	private int[] prevGPS = { 0, 0 };
-	private int[] currentWP = { 0, 0 };
-	private int[] errorDistance = { 0, 0 };
-	private int distanceToHome;
-	private int directionToHome;
-	private int distanceToWP;   // cm
-	private int directionToWP;  // degrees * 100
-	private int[] calcSpeed = { 0, 0 };
+	private int[] _posGps = { 0, 0 };
+	private int[] _homeGps = { 0, 0 };
+	private int[] _prevGps = { 0, 0 };
+	private int[] _currentWp = { 0, 0 };
+	private int[] _errorDistance = { 0, 0 };
+	private int _distanceToHome;
+	private int _directionToHome;
+	private int _distanceToWp;   // cm
+	private int _directionToWp;  // degrees * 100
+	private int[] _calcSpeed = { 0, 0 };
 
 	// earth radius in meters
-	private const float earthRadius = 6371010.0f;
+	private const float EarthRadius = 6371010.0f;
 	private InfoText _info;
 
 	void Start()
 	{
 		_info = GameObject.Find("InfoText").GetComponent<InfoText>();
-        posGPS[LAT] = (int)(Lat * 10000000UL);
-        posGPS[LON] = (int)(Lon * 10000000UL);
+        _posGps[LAT] = (int)(Lat * 10000000UL);
+        _posGps[LON] = (int)(Lon * 10000000UL);
 	}
 
 	private void resetGPS()
@@ -81,17 +81,17 @@ public class GPSSimulator : MonoBehaviour
 	public void StartNav()
 	{
 		resetGPS();
-		Nav = true;
+		nav = true;
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
-		gpsUpdate();
-		navUpdate();
+		_gpsUpdate();
+		_navUpdate();
 	}
 
-	private void gpsUpdate()
+	private void _gpsUpdate()
 	{
 		// 10Hz
 		if (Time.time - _lastTime < 0.1)
@@ -100,16 +100,14 @@ public class GPSSimulator : MonoBehaviour
 		}
 
 
-		if (!_isDistanceDeadband(0.1f))
-		{
-			// pos
-			_calcPos();
+		if (_isDistanceDeadband(0.1f)) return;
+		// pos
+		_calcPos();
 
-			// GPS bearing
-			_calcBearing();
+		// GPS bearing
+		_calcBearing();
 
-			_resetLast();
-		}
+		_resetLast();
 	}
 
 	private void _calcPos()
@@ -117,10 +115,10 @@ public class GPSSimulator : MonoBehaviour
 		float offsetX = transform.position.x - _homePosX;
 		float offsetY = transform.position.z - _homePosY;
 
-		float distance = getDistance(_homePosX, _homePosY, transform.position.x, transform.position.z);
-		float bearing = getBearing(_homePosX, _homePosY, transform.position.x, transform.position.z);
+		float distance = _getDistance(_homePosX, _homePosY, transform.position.x, transform.position.z);
+		float bearing = _getBearing(_homePosX, _homePosY, transform.position.x, transform.position.z);
 		float bearingRad = bearing / 180 * Mathf.PI;
-		double distRatio = distance / earthRadius;
+		double distRatio = distance / EarthRadius;
 		double distRatioSin = Math.Sin(distRatio);
 		double distRatioCos = Math.Cos(distRatio);
 
@@ -138,13 +136,13 @@ public class GPSSimulator : MonoBehaviour
 		Lon = endLonRad / Math.PI * 180;
 		_info.GPSLat = Lat;
 		_info.GPSLon = Lon;
-        posGPS[LAT] = (int)(Lat * 10000000UL);
-        posGPS[LON] = (int)(Lon * 10000000UL);
+        _posGps[LAT] = (int)(Lat * 10000000UL);
+        _posGps[LON] = (int)(Lon * 10000000UL);
 	}
 
 	private bool _isDistanceDeadband(float deadband)
 	{
-		float distance = getDistance(_lastPosX, _lastPosY, transform.position.x, transform.position.z);
+		float distance = _getDistance(_lastPosX, _lastPosY, transform.position.x, transform.position.z);
 		return distance <= deadband;
 	}
 
@@ -172,18 +170,18 @@ public class GPSSimulator : MonoBehaviour
 	{
 		_homePosX = transform.position.x;
 		_homePosY = transform.position.z;
-		homeGPS[LAT] = posGPS[LAT];
-		homeGPS[LON] = posGPS[LON];
+		_homeGps[LAT] = _posGps[LAT];
+		_homeGps[LON] = _posGps[LON];
 
-        calcLongitudeScaling(posGPS[LAT]);
+        _calcLongitudeScaling(_posGps[LAT]);
 	}
 
-	private void calcLongitudeScaling(int lat)
+	private void _calcLongitudeScaling(int lat)
 	{
 		scaleLonDown = Mathf.Cos(lat * 1.0e-7f * Mathf.PI / 180);
 	}
 
-    private float getBearing(float targetX, float targetY, float sourceX, float sourceY)
+    private static float _getBearing(float targetX, float targetY, float sourceX, float sourceY)
     {
         float offsetX = sourceX - targetX;
 		float offsetY = sourceY - targetY;
@@ -197,7 +195,7 @@ public class GPSSimulator : MonoBehaviour
         return bearing;
     }
 
-    private int getBearingByCoord(int targetLat, int targetLon, int sourceLat, int sourceLon)
+    private int _getBearingByCoord(int targetLat, int targetLon, int sourceLat, int sourceLon)
     {
         int offsetX = sourceLon - targetLon;
         int offsetY = (int)((sourceLat - targetLat) / scaleLonDown);
@@ -211,7 +209,7 @@ public class GPSSimulator : MonoBehaviour
         return (int)(bearing * 100);
     }
 
-    private float getDistance(float targetX, float targetY, float sourceX, float sourceY)
+    private static float _getDistance(float targetX, float targetY, float sourceX, float sourceY)
     {
         float offsetX = sourceX - targetX;
 		float offsetY = sourceY - targetY;
@@ -219,22 +217,22 @@ public class GPSSimulator : MonoBehaviour
 		return Mathf.Sqrt(Mathf.Pow(offsetX, 2) + Mathf.Pow(offsetY, 2));
     }
 
-    private int getDistanceByCoord(int targetLat, int targetLon, int sourceLat, int sourceLon)
+    private static int _getDistanceByCoord(int targetLat, int targetLon, int sourceLat, int sourceLon)
     {
-        return (int)(getDistance(targetLat, targetLon, sourceLat, sourceLon) * KmPerDegree / 100);
+        return (int)(_getDistance(targetLat, targetLon, sourceLat, sourceLon) * KmPerDegree / 100);
     }
 
-	private void navUpdate()
+	private void _navUpdate()
 	{
-		if (!Nav)
+		if (!nav)
 		{
 			return;
 		}
 
-        directionToHome = getBearingByCoord(posGPS[LAT], posGPS[LON], homeGPS[LAT], homeGPS[LON]);
-        distanceToHome = getDistanceByCoord(posGPS[LAT], posGPS[LON], homeGPS[LAT], homeGPS[LON]);
+        _directionToHome = _getBearingByCoord(_posGps[LAT], _posGps[LON], _homeGps[LAT], _homeGps[LON]);
+        _distanceToHome = _getDistanceByCoord(_posGps[LAT], _posGps[LON], _homeGps[LAT], _homeGps[LON]);
 
-        _info.DistanceToHome = (float)distanceToHome / 100;
-        _info.DirectionToHome = (float)directionToHome / 100;
+        _info.DistanceToHome = (float)_distanceToHome / 100;
+        _info.DirectionToHome = (float)_directionToHome / 100;
 	}
 }

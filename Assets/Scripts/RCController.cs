@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using Net;
+using Net.Protocol;
 
 public class RCController : MonoBehaviour
 {
@@ -15,7 +15,7 @@ public class RCController : MonoBehaviour
 	public const int MaxAttitudeCommand = 500;
 
     private IMUController _imu;
-    private GPSSimulator _gps;
+    private GpsSimulator _gps;
 	private Slider _throttle;
 	private Slider _roll;
 	private Slider _pitch;
@@ -55,7 +55,7 @@ public class RCController : MonoBehaviour
         DesiredVelZ = 50;
 
         _imu = GameObject.Find("IMU").GetComponent<IMUController>();
-        _gps = GameObject.Find("GPS").GetComponent<GPSSimulator>();
+        _gps = GameObject.Find("GPS").GetComponent<GpsSimulator>();
 		_throttle = GameObject.Find("sliderThrottle").GetComponent<Slider>();
 		_roll = GameObject.Find("sliderRoll").GetComponent<Slider>();
 		_pitch = GameObject.Find("sliderPitch").GetComponent<Slider>();
@@ -66,6 +66,11 @@ public class RCController : MonoBehaviour
 
         _desiredAltHold = GameObject.Find("TextDesiredAltHold").GetComponent<Text>();
         _desiredVelZHold = GameObject.Find("TextDesiredVelZHold").GetComponent<Text>();
+
+        var protocol = new ProtocolMsp();
+        ServerSocket.Instance.ParseFunc = protocol.ReceiveStream;
+        ServerSocket.Instance.PacketFunc = protocol.PacketStream;
+        ServerSocket.Instance.Start();
 	}
 
 	// Update is called once per frame
@@ -77,7 +82,7 @@ public class RCController : MonoBehaviour
 		{
 			AltHold = !AltHold;
 			_altHold.enabled = AltHold;
-            
+
 		}
 
 		if (Input.GetKeyUp(KeyCode.V))
@@ -108,7 +113,7 @@ public class RCController : MonoBehaviour
 
 	private void calcCommand()
 	{
-		float throttleScale = (Input.GetAxis("Throttle") + 1) / 2;
+		float throttleScale = Input.GetAxis("Throttle");
 		_throttle.SetValueWithoutNotify(throttleScale);
 		float offset = (MaxThrottleCommand - MinThrottleCommand) * throttleScale;
 		RCCommand[Throttle] = MinThrottleCommand + (int)offset;

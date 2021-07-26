@@ -13,7 +13,7 @@ public class PIDController : MonoBehaviour
 	private Motor _motor3;
 	private Motor _motor4;
 	private IMUController _imu;
-	private GPSSimulator _gps;
+	private GpsSimulator _gps;
 	private RCController _rc;
 	private InfoText _info;
     private Slider _sliderMotor1;
@@ -56,7 +56,7 @@ public class PIDController : MonoBehaviour
 		_motor4 = GameObject.Find("Motor4").GetComponent<Motor>();
 
 		_imu = GameObject.Find("IMU").GetComponent<IMUController>();
-		_gps = GameObject.Find("GPS").GetComponent<GPSSimulator>();
+		_gps = GameObject.Find("GPS").GetComponent<GpsSimulator>();
 		_rc = GameObject.Find("RC").GetComponent<RCController>();
 
 		_info = GameObject.Find("InfoText").GetComponent<InfoText>();
