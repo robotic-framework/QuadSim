@@ -1,3 +1,7 @@
+using System;
+using System.Net.Sockets;
+using System.Text;
+
 namespace Net.Protocol
 {
 	public enum MsgType
@@ -23,7 +27,7 @@ namespace Net.Protocol
 		private ushort _bufferIndex;
 		private ushort _bufferLength;
 
-		public void ReceiveStream(byte[] buf, ushort length)
+		public async void ReceiveStream(NetworkStream stream, byte[] buf, ushort length)
 		{
 			for (ushort i = 0; i < length; i++)
 			{
@@ -32,7 +36,9 @@ namespace Net.Protocol
 
 				if (_decode(buf[i]))
 				{
-					_processPacket(_buffer, _bufferLength);
+					var msg = _processPacket(_buffer, _bufferLength);
+					msg.WithStream(stream);
+					await ServerSocket.Instance.Resp.Writer.WriteAsync(msg);
 					_bufferIndex = 0;
 					_bufferLength = 0;
 				}
@@ -51,14 +57,15 @@ namespace Net.Protocol
 			}
 		}
 
-		public ushort PacketStream(IMessageSerializer msg, byte[] buffer, ushort maxLength)
+		public ushort PacketStream(MessageSerializer msg, byte[] buffer, ushort maxLength)
 		{
-			return 0;
+			return _encode(msg, buffer, maxLength);
 		}
 
 		protected abstract bool _decode(byte c);
-		protected abstract void _processPacket(byte[] buffer, ushort length);
+		protected abstract MessageSerializer _processPacket(byte[] buffer, ushort length);
+		protected abstract ushort _encode(MessageSerializer msg, byte[] buffer, ushort maxLength);
 
-		protected abstract void _msgSimImuHandler(MessageSimImu msg);
+		protected abstract MessageSimImu _msgSimImuHandler(MessageRequestSimImu request);
 	}
 }
