@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace Net.Protocol
 {
@@ -10,7 +11,8 @@ namespace Net.Protocol
 		MspSimAcc = 31,
 		MspSimGyro = 32,
 		MspSimMag = 33,
-		MspSimBaro = 34
+		MspSimBaro = 34,
+		MspSimControl = 35,
 	}
 
 	public enum MspProtocolState
@@ -38,6 +40,7 @@ namespace Net.Protocol
 				{MsgType.TypeSimGyro, MspType.MspSimGyro},
 				{MsgType.TypeSimMag, MspType.MspSimMag},
 				{MsgType.TypeSimBarometer, MspType.MspSimBaro},
+				{MsgType.TypeSimControl, MspType.MspSimControl},
 			};
 
 		private static readonly Dictionary<MspType, MsgType> _mspTypeMapping =
@@ -48,6 +51,7 @@ namespace Net.Protocol
 				{MspType.MspSimGyro, MsgType.TypeSimGyro},
 				{MspType.MspSimMag, MsgType.TypeSimMag},
 				{MspType.MspSimBaro, MsgType.TypeSimBarometer},
+				{MspType.MspSimControl, MsgType.TypeSimControl},
 			};
 
 		public static byte MsgTypeMapping(MsgType t)
@@ -120,13 +124,14 @@ namespace Net.Protocol
 					}
 					else
 					{
+						_state = MspProtocolState.MspIdle;
+
 						// the last byte is checksum, check if equal
 						if (_checksum == c)
 						{
 							return true;
 						}
 
-						_state = MspProtocolState.MspIdle;
 					}
 
 					break;
@@ -144,7 +149,7 @@ namespace Net.Protocol
 			}
 
 			MsgPacket packet;
-			packet.Payload = new byte[] { };
+			packet.Payload = new byte[255];
 
 			// copy payload
 			if (length > 6)
@@ -154,6 +159,8 @@ namespace Net.Protocol
 
 			packet.Length = buffer[3];
 			packet.Type = MspTypeMapping((MspType) buffer[4]);
+
+			Debug.Log(packet.Type.ToString());
 
 			MessageSerializer msg = null;
 			switch (packet.Type)
@@ -177,6 +184,13 @@ namespace Net.Protocol
 					break;
 				case MsgType.TypeSimBarometer:
 					break;
+				case MsgType.TypeSimControl:
+				{
+					var request = new MessageRequestControl();
+					request.Decode(packet.Payload, packet.Length);
+					_msgSimControlHandler(request);
+					break;
+				}
 			}
 
 			return msg;
@@ -211,19 +225,27 @@ namespace Net.Protocol
 			return offset;
 		}
 
-		protected override MessageSimImu _msgSimImuHandler(MessageRequestSimImu request)
+		protected override MessageResponseSimImu _msgSimImuHandler(MessageRequestSimImu request)
 		{
-			var msg = new MessageSimImu
+			var msg = new MessageResponseSimImu
 			{
 				Acc = {X = 1, Y = 2, Z = 3},
 				Gyro = {X = 4, Y = 5, Z = 6},
 				Mag = {X = 7, Y = 8, Z = 9},
 				Ct = 1000,
 				Cp = 10000,
-				Ccp = 20000
+				Ccp = 20000,
+				Att = {X = 0, Y = 0, Z = 0},
+				Alt = 50,
+				Vario = 0
 			};
 
 			return msg;
+		}
+
+		protected override void _msgSimControlHandler(MessageRequestControl request)
+		{
+			MotorController.instance.motors = request.Motors;
 		}
 	}
 }

@@ -109,6 +109,8 @@ public class RCController : MonoBehaviour
 		{
 			_desiredVelZHold.text = DesiredVelZ.ToString();
 		}
+
+		MotorController.instance.Update();
 	}
 
 	private void calcCommand()

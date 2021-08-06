@@ -18,7 +18,7 @@ namespace Net.Protocol
 		}
 	}
 
-	public class MessageSimImu : MessageSerializer
+	public class MessageResponseSimImu : MessageSerializer
 	{
 		public Vector3 Acc;
 		public Vector3 Gyro;
@@ -26,10 +26,13 @@ namespace Net.Protocol
 		public short Ct;
 		public int Cp;
 		public int Ccp;
+		public Vector3 Att;
+		public int Alt;
+		public short Vario;
 
 		public override void Decode(byte[] payload, ushort length)
 		{
-			if (length < 28)
+			if (length < 40)
 			{
 				return;
 			}
@@ -49,6 +52,13 @@ namespace Net.Protocol
 			Ct = BitConverter.ToInt16(payload, 18);
 			Cp = BitConverter.ToInt32(payload, 20);
 			Ccp = BitConverter.ToInt32(payload, 24);
+
+			Att.X = BitConverter.ToInt16(payload, 28);
+			Att.Y = BitConverter.ToInt16(payload, 30);
+			Att.Z = BitConverter.ToInt16(payload, 32);
+
+			Alt = BitConverter.ToInt32(payload, 34);
+			Vario = BitConverter.ToInt16(payload, 38);
 		}
 
 		public override byte Encode(byte[] payload, ushort maxLength)
@@ -90,89 +100,59 @@ namespace Net.Protocol
 			Array.Copy(BitConverter.GetBytes(Ccp), 0, payload, offset, 4);
 			offset += 4;
 
+			Array.Copy(BitConverter.GetBytes(Att.X), 0, payload, offset, 2);
+			offset += 2;
+
+			Array.Copy(BitConverter.GetBytes(Att.Y), 0, payload, offset, 2);
+			offset += 2;
+
+			Array.Copy(BitConverter.GetBytes(Att.Z), 0, payload, offset, 2);
+			offset += 2;
+
+			Array.Copy(BitConverter.GetBytes(Alt), 0, payload, offset, 4);
+			offset += 4;
+
+			Array.Copy(BitConverter.GetBytes(Vario), 0, payload, offset, 2);
+			offset += 2;
+
 			return offset;
 		}
 
-		public MessageSimImu() : base(MsgType.TypeSimImu)
+		public MessageResponseSimImu() : base(MsgType.TypeSimImu)
 		{
 		}
 	}
 
-	public class MessageSimAcc : MessageSerializer
+	public class MessageRequestControl : MessageSerializer
 	{
-		public Vector3 Acc;
+		public ushort[] Motors = new ushort[8];
+
+		public MessageRequestControl() : base(MsgType.TypeSimControl)
+		{
+		}
 
 		public override void Decode(byte[] payload, ushort length)
 		{
-			if (length < 6)
+			if (length < Motors.Length * 2)
 			{
 				return;
 			}
 
-			Acc.X = BitConverter.ToInt16(payload, 0);
-			Acc.Y = BitConverter.ToInt16(payload, 2);
-			Acc.Z = BitConverter.ToInt16(payload, 4);
+			for (int i = 0; i < Motors.Length; i++)
+			{
+				Motors[i] = BitConverter.ToUInt16(payload, i * 2);
+			}
 		}
 
 		public override byte Encode(byte[] payload, ushort maxLength)
 		{
-			byte offset = 0;
-			var bytesArray = BitConverter.GetBytes(Acc.X);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			bytesArray = BitConverter.GetBytes(Acc.Y);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			bytesArray = BitConverter.GetBytes(Acc.Z);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			return offset;
-		}
-
-		public MessageSimAcc() : base(MsgType.TypeSimAcc)
-		{
-		}
-	}
-
-	public class MessageSimGyro : MessageSerializer
-	{
-		public Vector3 Gyro;
-
-		public override void Decode(byte[] payload, ushort length)
-		{
-			if (length < 6)
+			for (int i = 0; i < Motors.Length; i++)
 			{
-				return;
+				Array.Copy(BitConverter.GetBytes(Motors[i]), 0, payload, i * 2, 2);
 			}
 
-			Gyro.X = BitConverter.ToInt16(payload, 0);
-			Gyro.Y = BitConverter.ToInt16(payload, 2);
-			Gyro.Z = BitConverter.ToInt16(payload, 4);
-		}
-
-		public override byte Encode(byte[] payload, ushort maxLength)
-		{
-			byte offset = 0;
-			var bytesArray = BitConverter.GetBytes(Gyro.X);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			bytesArray = BitConverter.GetBytes(Gyro.Y);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			bytesArray = BitConverter.GetBytes(Gyro.Z);
-			Array.Copy(bytesArray, 0, payload, offset, 2);
-			offset += 2;
-
-			return offset;
-		}
-
-		public MessageSimGyro() : base(MsgType.TypeSimGyro)
-		{
+			return (byte)(Motors.Length * 2);
 		}
 	}
+
 }

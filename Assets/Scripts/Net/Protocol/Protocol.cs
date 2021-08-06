@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Text;
+using UnityEngine;
 
 namespace Net.Protocol
 {
@@ -11,6 +12,7 @@ namespace Net.Protocol
 		TypeSimGyro,
 		TypeSimMag,
 		TypeSimBarometer,
+		TypeSimControl,
 	}
 
 	public struct MsgPacket
@@ -37,8 +39,11 @@ namespace Net.Protocol
 				if (_decode(buf[i]))
 				{
 					var msg = _processPacket(_buffer, _bufferLength);
-					msg.WithStream(stream);
-					await ServerSocket.Instance.Resp.Writer.WriteAsync(msg);
+					if (msg != null)
+					{
+						msg.WithStream(stream);
+						await ServerSocket.Instance.Resp.Writer.WriteAsync(msg);
+					}
 					_bufferIndex = 0;
 					_bufferLength = 0;
 				}
@@ -66,6 +71,7 @@ namespace Net.Protocol
 		protected abstract MessageSerializer _processPacket(byte[] buffer, ushort length);
 		protected abstract ushort _encode(MessageSerializer msg, byte[] buffer, ushort maxLength);
 
-		protected abstract MessageSimImu _msgSimImuHandler(MessageRequestSimImu request);
+		protected abstract MessageResponseSimImu _msgSimImuHandler(MessageRequestSimImu request);
+		protected abstract void _msgSimControlHandler(MessageRequestControl request);
 	}
 }
