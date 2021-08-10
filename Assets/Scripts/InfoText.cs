@@ -8,8 +8,8 @@ public class InfoText : MonoBehaviour
 	// Start is called before the first frame update
 	private Text text;
 
-	public int[] Eular = { 0, 0, 0 };
-	public int[] Gyro = { 0, 0, 0 };
+	public short[] Eular = { 0, 0, 0 };
+	public short[] Gyro = { 0, 0, 0 };
 	public int Altitude = 0;
 	public int VelZ = 0;
 	public float GPSBearing = 0;

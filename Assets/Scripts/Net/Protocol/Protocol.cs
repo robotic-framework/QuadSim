@@ -28,6 +28,7 @@ namespace Net.Protocol
 		private byte[] _buffer = new byte[MaxBufferSize];
 		private ushort _bufferIndex;
 		private ushort _bufferLength;
+		protected IHandler _handler;
 
 		public async void ReceiveStream(NetworkStream stream, byte[] buf, ushort length)
 		{
@@ -70,8 +71,5 @@ namespace Net.Protocol
 		protected abstract bool _decode(byte c);
 		protected abstract MessageSerializer _processPacket(byte[] buffer, ushort length);
 		protected abstract ushort _encode(MessageSerializer msg, byte[] buffer, ushort maxLength);
-
-		protected abstract MessageResponseSimImu _msgSimImuHandler(MessageRequestSimImu request);
-		protected abstract void _msgSimControlHandler(MessageRequestControl request);
 	}
 }

@@ -1,58 +1,50 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
-public class IMUController : MonoBehaviour
+public class ImuController : MonoBehaviour
 {
 	private const float GYRO_LSB = 14.375F;
 	private Vector3 _eular;
-	private int[] _eularArray = { 0, 0, 0 };
-	private float[] _lastAngles = { 0, 0, 0 };
+	private short[] _eularArray = {0, 0, 0};
+	private float[] _lastAngles = {0, 0, 0};
 
-	private int[] _gyroArray = { 0, 0, 0 };
+	private short[] _gyroArray = {0, 0, 0};
 
-    private float _lastAltitude;
-    private float _velVerticle = 0F; // m/s
-    private float _lastTime = 0F;
+	private float _lastAltitude;
+	private float _velVerticle; // m/s
+
+	private InfoText _info;
 
 	// Start is called before the first frame update
-	public int[] EularArray
+	public short[] EularArray
+	{
+		get { return _eularArray; }
+	}
+
+	public short[] GyroArray
+	{
+		get { return _gyroArray; }
+	}
+
+	public int Altitude
+	{
+		get { return Convert.ToInt32(_lastAltitude * 100); }
+	}
+
+	public short VelZ
 	{
 		get
 		{
-			return _eularArray;
+			return Convert.ToInt16(_velVerticle * 100); // cm/s
 		}
 	}
 
-	public int[] GyroArray
+	void Start()
 	{
-		get
-		{
-			return _gyroArray;
-		}
+		_info = GameObject.Find("InfoText").GetComponent<InfoText>();
+		_lastAltitude = transform.position.y;
 	}
 
-    public int Altitude
-    {
-        get
-        {
-            return (int)(transform.position.y * 100);
-        }
-    }
-
-    public int VelZ
-    {
-        get
-        {
-            return (int)(_velVerticle * 100); // cm/s
-        }
-    }
-
-    void Start()
-    {
-        _lastTime = Time.time;
-    }
-    
 
 	// Update is called once per frame
 	void Update()
@@ -62,40 +54,46 @@ public class IMUController : MonoBehaviour
 		{
 			_eular.x -= 360;
 		}
+
 		if (_eular.y >= 180)
 		{
 			_eular.y -= 360;
 		}
+
 		if (_eular.z >= 180)
 		{
 			_eular.z -= 360;
 		}
-		_eularArray[0] = -(int)(_eular.z * 10); // Roll
-		_eularArray[1] = (int)(_eular.x * 10); // Pitch
-		_eularArray[2] = (int)(_eular.y * 10); // Yaw
 
-		float[] angles = { 0, 0, 0 };
-        angles[0] = -_eular.z;
-        angles[1] = _eular.x;
-        angles[2] = _eular.y;
+		_eularArray[0] = Convert.ToInt16(-(_eular.z * 10)); // Roll
+		_eularArray[1] = Convert.ToInt16(_eular.x * 10); // Pitch
+		_eularArray[2] = Convert.ToInt16(_eular.y * 10); // Yaw
 
-        float offset;
+		float[] angles = {0, 0, 0};
+		angles[0] = -_eular.z;
+		angles[1] = _eular.x;
+		angles[2] = _eular.y;
+
+		float offset;
 		for (int axis = 0; axis < 3; axis++)
 		{
 			offset = angles[axis] - _lastAngles[axis];
-			float gyro = offset / Time.deltaTime;
-			_gyroArray[axis] = (int)(gyro * GYRO_LSB);
-            _lastAngles[axis] = angles[axis];
+			var deltaAngle = offset / Time.deltaTime;
+			_gyroArray[axis] = Convert.ToInt16(deltaAngle * GYRO_LSB);
+			_lastAngles[axis] = angles[axis];
 		}
 
-        float curTime = Time.time;
-        offset = transform.position.y - _lastAltitude;
-        if (offset != 0)
-        {
-            _velVerticle = offset / (curTime - _lastTime);
-            _lastTime = curTime;
-        }
+		offset = transform.position.y - _lastAltitude;
+		if (offset != 0)
+		{
+			_velVerticle = offset / Time.deltaTime;
+		}
 
-        _lastAltitude = transform.position.y;
+		_lastAltitude = transform.position.y;
+
+		_info.Eular = EularArray;
+		_info.Gyro = GyroArray;
+		_info.Altitude = Altitude;
+		_info.VelZ = VelZ;
 	}
 }

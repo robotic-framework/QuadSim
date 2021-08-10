@@ -54,6 +54,11 @@ namespace Net.Protocol
 				{MspType.MspSimControl, MsgType.TypeSimControl},
 			};
 
+		public ProtocolMsp()
+		{
+			_handler = new CommonHandler();
+		}
+
 		public static byte MsgTypeMapping(MsgType t)
 		{
 			return (byte) _msgTypeMapping[t];
@@ -102,7 +107,6 @@ namespace Net.Protocol
 					{
 						_dataSize = c;
 						_checksum = c;
-						_dataOffset = 0;
 						_state = MspProtocolState.MspHeaderSize;
 					}
 
@@ -112,6 +116,7 @@ namespace Net.Protocol
 				{
 					// expect cmd
 					_checksum ^= c;
+					_dataOffset = 0;
 					_state = MspProtocolState.MspHeaderCmd;
 					break;
 				}
@@ -160,8 +165,6 @@ namespace Net.Protocol
 			packet.Length = buffer[3];
 			packet.Type = MspTypeMapping((MspType) buffer[4]);
 
-			Debug.Log(packet.Type.ToString());
-
 			MessageSerializer msg = null;
 			switch (packet.Type)
 			{
@@ -169,7 +172,7 @@ namespace Net.Protocol
 				{
 					var request = new MessageRequestSimImu();
 					request.Decode(packet.Payload, packet.Length);
-					msg = _msgSimImuHandler(request);
+					msg = _handler.msgSimImuHandler(request);
 					break;
 				}
 				case MsgType.TypeSimAcc:
@@ -188,7 +191,7 @@ namespace Net.Protocol
 				{
 					var request = new MessageRequestControl();
 					request.Decode(packet.Payload, packet.Length);
-					_msgSimControlHandler(request);
+					_handler.msgSimControlHandler(request);
 					break;
 				}
 			}
@@ -223,29 +226,6 @@ namespace Net.Protocol
 			offset++;
 
 			return offset;
-		}
-
-		protected override MessageResponseSimImu _msgSimImuHandler(MessageRequestSimImu request)
-		{
-			var msg = new MessageResponseSimImu
-			{
-				Acc = {X = 1, Y = 2, Z = 3},
-				Gyro = {X = 4, Y = 5, Z = 6},
-				Mag = {X = 7, Y = 8, Z = 9},
-				Ct = 1000,
-				Cp = 10000,
-				Ccp = 20000,
-				Att = {X = 0, Y = 0, Z = 0},
-				Alt = 50,
-				Vario = 0
-			};
-
-			return msg;
-		}
-
-		protected override void _msgSimControlHandler(MessageRequestControl request)
-		{
-			MotorController.instance.motors = request.Motors;
 		}
 	}
 }

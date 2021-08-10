@@ -62,6 +62,6 @@ public class MotorController
 
 	private float _throttleScale(int throttle)
 	{
-		return (float)(throttle - RCController.MinThrottleCommand) / (float)(RCController.MaxThrottleCommand - RCController.MinThrottleCommand);
+		return (throttle - RCController.MinThrottleCommand) / (float)(RCController.MaxThrottleCommand - RCController.MinThrottleCommand);
 	}
 }

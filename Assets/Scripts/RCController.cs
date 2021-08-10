@@ -15,7 +15,7 @@ public class RCController : MonoBehaviour
 	public const int MaxThrottleCommand = 1850;
 	public const int MaxAttitudeCommand = 500;
 
-	private IMUController _imu;
+	private ImuController _imu;
 	private GpsSimulator _gps;
 	private Slider _throttle;
 	private Slider _roll;
@@ -60,7 +60,7 @@ public class RCController : MonoBehaviour
 		DesiredAltHold = 0;
 		DesiredVelZ = 50;
 
-		_imu = GameObject.Find("IMU").GetComponent<IMUController>();
+		_imu = GameObject.Find("IMU").GetComponent<ImuController>();
 		_gps = GameObject.Find("GPS").GetComponent<GpsSimulator>();
 		_throttle = GameObject.Find("sliderThrottle").GetComponent<Slider>();
 		_roll = GameObject.Find("sliderRoll").GetComponent<Slider>();
@@ -118,7 +118,7 @@ public class RCController : MonoBehaviour
 		float throttleScale = Input.GetAxis("Throttle");
 		_throttle.SetValueWithoutNotify(throttleScale);
 		float offset = (MaxThrottleCommand - MinThrottleCommand) * throttleScale;
-		RCCommand[Throttle] = MinThrottleCommand + (int) offset;
+		RCCommand[Throttle] = (int) offset;
 
 		float scale = Input.GetAxis("Horizontal");
 		_roll.SetValueWithoutNotify((scale + 1) / 2);

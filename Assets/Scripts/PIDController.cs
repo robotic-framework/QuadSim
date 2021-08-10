@@ -12,7 +12,7 @@ public class PIDController : MonoBehaviour
 	private Motor _motor2;
 	private Motor _motor3;
 	private Motor _motor4;
-	private IMUController _imu;
+	private ImuController _imu;
 	private GpsSimulator _gps;
 	private RCController _rc;
 	private InfoText _info;
@@ -25,8 +25,8 @@ public class PIDController : MonoBehaviour
     private Text _textMotor3;
     private Text _textMotor4;
 
-	private int[] _eularArray = { 0, 0, 0 };
-	private int[] _gyroArray = { 0, 0, 0 };
+	private short[] _eularArray = { 0, 0, 0 };
+	private short[] _gyroArray = { 0, 0, 0 };
 	private int[] errorAngleI = { 0, 0, 0 };
 	private int errorAltI = 0;
 	private int errorVelZI = 0;
@@ -55,7 +55,7 @@ public class PIDController : MonoBehaviour
 		_motor3 = GameObject.Find("Motor3").GetComponent<Motor>();
 		_motor4 = GameObject.Find("Motor4").GetComponent<Motor>();
 
-		_imu = GameObject.Find("IMU").GetComponent<IMUController>();
+		_imu = GameObject.Find("IMU").GetComponent<ImuController>();
 		_gps = GameObject.Find("GPS").GetComponent<GpsSimulator>();
 		_rc = GameObject.Find("RC").GetComponent<RCController>();
 
