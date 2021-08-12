@@ -6,13 +6,15 @@ namespace Net.Protocol
 	public class CommonHandler : IHandler
 	{
 		private readonly ImuController _imu;
+		private readonly RCController _rc;
 
 		public CommonHandler()
 		{
 			_imu = GameObject.Find("IMU").GetComponent<ImuController>();
+			_rc = GameObject.Find("RC").GetComponent<RCController>();
 		}
 
-		public MessageResponseSimImu msgSimImuHandler(MessageRequestSimImu request)
+		public MessageResponseSimImu msgSimImuHandler()
 		{
 			var msg = new MessageResponseSimImu
 			{
@@ -33,6 +35,12 @@ namespace Net.Protocol
 		public void msgSimControlHandler(MessageRequestControl request)
 		{
 			MotorController.instance.motors = request.Motors;
+		}
+
+		public MessageResponseCommand msgSimCommandHandler()
+		{
+			var msg = new MessageResponseCommand {Command = _rc.RCCommand};
+			return msg;
 		}
 	}
 }

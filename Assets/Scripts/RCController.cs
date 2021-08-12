@@ -4,16 +4,29 @@ using UnityEngine.UI;
 using Net;
 using Net.Protocol;
 
+enum RCAxis : short
+{
+	ROLL,
+	PITCH,
+	YAW,
+	THROTTLE,
+	AUX1,
+	AUX2,
+	AUX3,
+	AUX4,
+	AUX5,
+	AUX6,
+	AUX7,
+	AUX8,
+	RC_AXIS_COUNT
+}
+
 public class RCController : MonoBehaviour
 {
-	public const short Roll = 0;
-	public const short Pitch = 1;
-	public const short Yaw = 2;
-	public const short Throttle = 3;
-	public const int StandbyCommand = 1000;
-	public const int MinThrottleCommand = 1150;
-	public const int MaxThrottleCommand = 1850;
-	public const int MaxAttitudeCommand = 500;
+	public const short StandbyCommand = 1000;
+	public const short MinThrottleCommand = 1150;
+	public const short MaxThrottleCommand = 1850;
+	public const short MaxAttitudeCommand = 500;
 
 	private ImuController _imu;
 	private GpsSimulator _gps;
@@ -27,13 +40,8 @@ public class RCController : MonoBehaviour
 	private Text _desiredAltHold;
 
 	// interval [1000;2000] for THROTTLE and [-500;+500] for ROLL/PITCH/YAW
-	private int[] _rcCommand = {0, 0, 0, 0};
 
-	public int[] RCCommand
-	{
-		get { return _rcCommand; }
-		set { _rcCommand = value; }
-	}
+	public short[] RCCommand { get; set; } = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	public bool AltHold { get; set; }
 
@@ -51,6 +59,8 @@ public class RCController : MonoBehaviour
 		ServerSocket.Instance.ParseFunc = protocol.ReceiveStream;
 		ServerSocket.Instance.PacketFunc = protocol.PacketStream;
 		ServerSocket.Instance.Start();
+
+		RCCommand[(short) RCAxis.THROTTLE] = MinThrottleCommand;
 	}
 
 	private void Start()
@@ -75,26 +85,9 @@ public class RCController : MonoBehaviour
 	}
 
 	// Update is called once per frame
-	private void Update()
+	private async void Update()
 	{
 		calcCommand();
-
-		if (Input.GetKeyUp(KeyCode.H))
-		{
-			AltHold = !AltHold;
-			_altHold.enabled = AltHold;
-		}
-
-		if (Input.GetKeyUp(KeyCode.V))
-		{
-			VelZHold = !VelZHold;
-			_velZHold.enabled = VelZHold;
-		}
-
-		if (Input.GetKeyUp(KeyCode.N))
-		{
-			_gps.StartNav();
-		}
 
 		if (!AltHold)
 		{
@@ -115,24 +108,43 @@ public class RCController : MonoBehaviour
 
 	private void calcCommand()
 	{
-		float throttleScale = Input.GetAxis("Throttle");
+		var throttleScale = Math.Max(Input.GetAxis("Throttle"), 0); // cut to 0~1
 		_throttle.SetValueWithoutNotify(throttleScale);
-		float offset = (MaxThrottleCommand - MinThrottleCommand) * throttleScale;
-		RCCommand[Throttle] = (int) offset;
+		var offset = (MaxThrottleCommand - MinThrottleCommand) * throttleScale;
+		RCCommand[(short) RCAxis.THROTTLE] = (short) (MinThrottleCommand + Convert.ToInt16(offset));
 
-		float scale = Input.GetAxis("Horizontal");
+		var scale = Input.GetAxis("Horizontal");
 		_roll.SetValueWithoutNotify((scale + 1) / 2);
 		offset = MaxAttitudeCommand * scale;
-		RCCommand[Roll] = (int) offset;
+		RCCommand[(short) RCAxis.ROLL] = Convert.ToInt16(offset);
 
 		scale = Input.GetAxis("Vertical");
 		_pitch.SetValueWithoutNotify((scale + 1) / 2);
 		offset = MaxAttitudeCommand * scale;
-		RCCommand[Pitch] = (int) offset;
+		RCCommand[(short) RCAxis.PITCH] = Convert.ToInt16(offset);
 
 		scale = Input.GetAxis("Yaw");
 		_yaw.SetValueWithoutNotify((scale + 1) / 2);
 		offset = MaxAttitudeCommand * scale;
-		RCCommand[Yaw] = -(int) offset;
+		RCCommand[(short) RCAxis.YAW] = (short) -Convert.ToInt16(offset);
+
+		if (Input.GetKeyUp(KeyCode.H))
+		{
+			AltHold = !AltHold;
+			_altHold.enabled = AltHold;
+		}
+
+		if (Input.GetKeyUp(KeyCode.V))
+		{
+			VelZHold = !VelZHold;
+			_velZHold.enabled = VelZHold;
+		}
+
+		if (Input.GetKeyUp(KeyCode.N))
+		{
+			_gps.StartNav();
+		}
+
+		Debug.Log(RCCommand[0] + ", " + RCCommand[1] + ", " + RCCommand[2] + ", " + RCCommand[3]);
 	}
 }

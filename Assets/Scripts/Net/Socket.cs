@@ -70,6 +70,7 @@ namespace Net
 				{
 					using (var tcpClient = _listener.AcceptTcpClient())
 					{
+						Debug.Log(tcpClient.Client.RemoteEndPoint + " Connected");
 						using (var stream = tcpClient.GetStream())
 						{
 							var reader = new BinaryReader(stream);

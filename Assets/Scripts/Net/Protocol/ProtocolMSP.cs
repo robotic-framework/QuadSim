@@ -8,11 +8,8 @@ namespace Net.Protocol
 	public enum MspType : byte
 	{
 		MspSimImu = 30,
-		MspSimAcc = 31,
-		MspSimGyro = 32,
-		MspSimMag = 33,
-		MspSimBaro = 34,
-		MspSimControl = 35,
+		MspSimControl = 31,
+		MspSimCommand = 32
 	}
 
 	public enum MspProtocolState
@@ -36,22 +33,16 @@ namespace Net.Protocol
 			new Dictionary<MsgType, MspType>
 			{
 				{MsgType.TypeSimImu, MspType.MspSimImu},
-				{MsgType.TypeSimAcc, MspType.MspSimAcc},
-				{MsgType.TypeSimGyro, MspType.MspSimGyro},
-				{MsgType.TypeSimMag, MspType.MspSimMag},
-				{MsgType.TypeSimBarometer, MspType.MspSimBaro},
 				{MsgType.TypeSimControl, MspType.MspSimControl},
+				{MsgType.TypeSimCommand, MspType.MspSimCommand},
 			};
 
 		private static readonly Dictionary<MspType, MsgType> _mspTypeMapping =
 			new Dictionary<MspType, MsgType>
 			{
 				{MspType.MspSimImu, MsgType.TypeSimImu},
-				{MspType.MspSimAcc, MsgType.TypeSimAcc},
-				{MspType.MspSimGyro, MsgType.TypeSimGyro},
-				{MspType.MspSimMag, MsgType.TypeSimMag},
-				{MspType.MspSimBaro, MsgType.TypeSimBarometer},
 				{MspType.MspSimControl, MsgType.TypeSimControl},
+				{MspType.MspSimCommand, MsgType.TypeSimCommand},
 			};
 
 		public ProtocolMsp()
@@ -136,7 +127,6 @@ namespace Net.Protocol
 						{
 							return true;
 						}
-
 					}
 
 					break;
@@ -170,28 +160,19 @@ namespace Net.Protocol
 			{
 				case MsgType.TypeSimImu:
 				{
-					var request = new MessageRequestSimImu();
-					request.Decode(packet.Payload, packet.Length);
-					msg = _handler.msgSimImuHandler(request);
+					msg = _handler.msgSimImuHandler();
 					break;
 				}
-				case MsgType.TypeSimAcc:
-				{
-					break;
-				}
-				case MsgType.TypeSimGyro:
-				{
-					break;
-				}
-				case MsgType.TypeSimMag:
-					break;
-				case MsgType.TypeSimBarometer:
-					break;
 				case MsgType.TypeSimControl:
 				{
 					var request = new MessageRequestControl();
 					request.Decode(packet.Payload, packet.Length);
 					_handler.msgSimControlHandler(request);
+					break;
+				}
+				case MsgType.TypeSimCommand:
+				{
+					msg = _handler.msgSimCommandHandler();
 					break;
 				}
 			}

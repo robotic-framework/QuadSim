@@ -41,6 +41,6 @@ public class Motor : MonoBehaviour
         {
             torque = Vector3.down;
         }
-        _rigidbody.AddRelativeTorque(torque * force);
+        _rigidbody.AddRelativeTorque(torque * (force * 100));
     }
 }

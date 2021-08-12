@@ -8,11 +8,8 @@ namespace Net.Protocol
 	public enum MsgType
 	{
 		TypeSimImu,
-		TypeSimAcc,
-		TypeSimGyro,
-		TypeSimMag,
-		TypeSimBarometer,
 		TypeSimControl,
+		TypeSimCommand
 	}
 
 	public struct MsgPacket

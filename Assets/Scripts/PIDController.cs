@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// Deprecated
 public class PIDController : MonoBehaviour
 {
 	private const int GYRO_P_MAX = 300;
@@ -85,13 +86,15 @@ public class PIDController : MonoBehaviour
 
 		apply();
 		mixMotor();
+
+		MotorController.instance.Update();
 	}
 
 	private void apply()
 	{
 		int PTerm = 0, ITerm = 0, DTerm = 0, PTermACC, ITermACC;
 		int limit = 0;
-		int prop = Mathf.Min(Mathf.Max(Mathf.Abs(_rc.RCCommand[RCController.Pitch]), Mathf.Abs(_rc.RCCommand[RCController.Roll])), 512);
+		int prop = Mathf.Min(Mathf.Max(Mathf.Abs(_rc.RCCommand[(short) RCAxis.PITCH]), Mathf.Abs(_rc.RCCommand[(short) RCAxis.ROLL])), 512);
 		// Roll and Pitch
 		for (int axis = 0; axis < 2; axis++)
 		{
@@ -122,7 +125,7 @@ public class PIDController : MonoBehaviour
 
 		// Yaw
 		{
-			int rcLevel = (_rc.RCCommand[RCController.Yaw] * 30) >> 5;
+			int rcLevel = (_rc.RCCommand[(short) RCAxis.YAW] * 30) >> 5;
 			int error = rcLevel - _gyroArray[2];
 			errorGyroI_YAW += error * ILevel;
 			errorGyroI_YAW = Mathf.Clamp(errorGyroI_YAW, 2 - (1 << 28), -2 + (1 << 28));
@@ -135,7 +138,7 @@ public class PIDController : MonoBehaviour
 			limit = GYRO_P_MAX - DLevel;
 			PTerm = Mathf.Clamp(PTerm, -limit, limit);
 			ITerm = Mathf.Clamp(errorGyroI_YAW >> 13, -GYRO_I_MAX, GYRO_I_MAX);
-			commandOffset[RCController.Yaw] = PTerm + ITerm;
+			commandOffset[(short) RCAxis.YAW] = PTerm + ITerm;
 		}
 
 		// AltHold
@@ -151,7 +154,7 @@ public class PIDController : MonoBehaviour
 
 			int velZ = _imu.VelZ;
 			DTerm = Mathf.Clamp(DAltHold * velZ >> 4, -150, 150);
-			commandOffset[RCController.Throttle] = PTerm + ITerm - DTerm;
+			commandOffset[(short) RCAxis.THROTTLE] = PTerm + ITerm - DTerm;
 		}
 
 		// VelZ
@@ -194,11 +197,11 @@ public class PIDController : MonoBehaviour
 
 	private int _pidMix(int x, int y, int z)
 	{
-		return _rc.RCCommand[RCController.Throttle] +
-            commandOffset[RCController.Roll] * x +
-            commandOffset[RCController.Pitch] * y +
-            commandOffset[RCController.Yaw] * z +
-            commandOffset[RCController.Throttle] +
+		return _rc.RCCommand[(short) RCAxis.THROTTLE] +
+            commandOffset[(short) RCAxis.ROLL] * x +
+            commandOffset[(short) RCAxis.PITCH] * y +
+            commandOffset[(short) RCAxis.YAW] * z +
+            commandOffset[(short) RCAxis.THROTTLE] +
             commandOffset[4];
 	}
 

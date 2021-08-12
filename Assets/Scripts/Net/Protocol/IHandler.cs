@@ -2,7 +2,8 @@ namespace Net.Protocol
 {
 	public interface IHandler
 	{
-		MessageResponseSimImu msgSimImuHandler(MessageRequestSimImu request);
+		MessageResponseSimImu msgSimImuHandler();
 		void msgSimControlHandler(MessageRequestControl request);
+		MessageResponseCommand msgSimCommandHandler();
 	}
 }

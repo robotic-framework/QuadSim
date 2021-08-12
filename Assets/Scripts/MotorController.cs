@@ -44,10 +44,10 @@ public class MotorController
 
 	public void Update()
 	{
-		_motor1.Throttle = motors[0] + _rc.RCCommand[RCController.Throttle];
-		_motor2.Throttle = motors[1] + _rc.RCCommand[RCController.Throttle];
-		_motor3.Throttle = motors[2] + _rc.RCCommand[RCController.Throttle];
-		_motor4.Throttle = motors[3] + _rc.RCCommand[RCController.Throttle];
+		_motor1.Throttle = motors[0];
+		_motor2.Throttle = motors[1];
+		_motor3.Throttle = motors[2];
+		_motor4.Throttle = motors[3];
 
 		_textMotor1.text = _motor1.Throttle.ToString();
 		_textMotor2.text = _motor2.Throttle.ToString();
@@ -62,6 +62,7 @@ public class MotorController
 
 	private float _throttleScale(int throttle)
 	{
-		return (throttle - RCController.MinThrottleCommand) / (float)(RCController.MaxThrottleCommand - RCController.MinThrottleCommand);
+		return (throttle - RCController.MinThrottleCommand) /
+		       (float) (RCController.MaxThrottleCommand - RCController.MinThrottleCommand);
 	}
 }

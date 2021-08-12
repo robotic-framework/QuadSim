@@ -2,21 +2,6 @@ using System;
 
 namespace Net.Protocol
 {
-	public class MessageRequestSimImu : MessageSerializer
-	{
-		public MessageRequestSimImu() : base(MsgType.TypeSimImu)
-		{
-		}
-
-		public override void Decode(byte[] payload, ushort length)
-		{
-		}
-
-		public override byte Encode(byte[] payload, ushort maxLength)
-		{
-			return 0;
-		}
-	}
 
 	public class MessageResponseSimImu : MessageSerializer
 	{
@@ -138,7 +123,7 @@ namespace Net.Protocol
 				return;
 			}
 
-			for (int i = 0; i < Motors.Length; i++)
+			for (var i = 0; i < Motors.Length; i++)
 			{
 				Motors[i] = BitConverter.ToUInt16(payload, i * 2);
 			}
@@ -146,7 +131,7 @@ namespace Net.Protocol
 
 		public override byte Encode(byte[] payload, ushort maxLength)
 		{
-			for (int i = 0; i < Motors.Length; i++)
+			for (var i = 0; i < Motors.Length; i++)
 			{
 				Array.Copy(BitConverter.GetBytes(Motors[i]), 0, payload, i * 2, 2);
 			}
@@ -155,4 +140,35 @@ namespace Net.Protocol
 		}
 	}
 
+	public class MessageResponseCommand : MessageSerializer
+	{
+		public short[] Command = new short[12];
+
+		public MessageResponseCommand() : base(MsgType.TypeSimCommand)
+		{
+		}
+
+		public override void Decode(byte[] payload, ushort length)
+		{
+			if (length < Command.Length * 2)
+			{
+				return;
+			}
+
+			for (var i = 0; i < Command.Length; i++)
+			{
+				Command[i] = BitConverter.ToInt16(payload, i * 2);
+			}
+		}
+
+		public override byte Encode(byte[] payload, ushort maxLength)
+		{
+			for (var i = 0; i < Command.Length; i++)
+			{
+				Array.Copy(BitConverter.GetBytes(Command[i]), 0, payload, i * 2, 2);
+			}
+
+			return (byte)(Command.Length * 2);
+		}
+	}
 }

@@ -49,51 +49,58 @@ public class ImuController : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		_eular = transform.rotation.eulerAngles;
-		if (_eular.x >= 180)
+		try
 		{
-			_eular.x -= 360;
-		}
+			_eular = transform.rotation.eulerAngles;
+			if (_eular.x >= 180)
+			{
+				_eular.x -= 360;
+			}
 
-		if (_eular.y >= 180)
+			if (_eular.y >= 180)
+			{
+				_eular.y -= 360;
+			}
+
+			if (_eular.z >= 180)
+			{
+				_eular.z -= 360;
+			}
+
+			_eularArray[0] = Convert.ToInt16(-(_eular.z * 10)); // Roll
+			_eularArray[1] = Convert.ToInt16(_eular.x * 10); // Pitch
+			_eularArray[2] = Convert.ToInt16(_eular.y * 10); // Yaw
+
+			float[] angles = {0, 0, 0};
+			angles[0] = -_eular.z;
+			angles[1] = _eular.x;
+			angles[2] = _eular.y;
+
+			float offset;
+			for (int axis = 0; axis < 3; axis++)
+			{
+				offset = angles[axis] - _lastAngles[axis];
+				var deltaAngle = offset / Time.deltaTime;
+				_gyroArray[axis] = Convert.ToInt16(deltaAngle * GYRO_LSB);
+				_lastAngles[axis] = angles[axis];
+			}
+
+			offset = transform.position.y - _lastAltitude;
+			if (offset != 0)
+			{
+				_velVerticle = offset / Time.deltaTime;
+			}
+
+			_lastAltitude = transform.position.y;
+
+			_info.Eular = EularArray;
+			_info.Gyro = GyroArray;
+			_info.Altitude = Altitude;
+			_info.VelZ = VelZ;
+		}
+		catch (Exception e)
 		{
-			_eular.y -= 360;
+			Debug.LogError(e);
 		}
-
-		if (_eular.z >= 180)
-		{
-			_eular.z -= 360;
-		}
-
-		_eularArray[0] = Convert.ToInt16(-(_eular.z * 10)); // Roll
-		_eularArray[1] = Convert.ToInt16(_eular.x * 10); // Pitch
-		_eularArray[2] = Convert.ToInt16(_eular.y * 10); // Yaw
-
-		float[] angles = {0, 0, 0};
-		angles[0] = -_eular.z;
-		angles[1] = _eular.x;
-		angles[2] = _eular.y;
-
-		float offset;
-		for (int axis = 0; axis < 3; axis++)
-		{
-			offset = angles[axis] - _lastAngles[axis];
-			var deltaAngle = offset / Time.deltaTime;
-			_gyroArray[axis] = Convert.ToInt16(deltaAngle * GYRO_LSB);
-			_lastAngles[axis] = angles[axis];
-		}
-
-		offset = transform.position.y - _lastAltitude;
-		if (offset != 0)
-		{
-			_velVerticle = offset / Time.deltaTime;
-		}
-
-		_lastAltitude = transform.position.y;
-
-		_info.Eular = EularArray;
-		_info.Gyro = GyroArray;
-		_info.Altitude = Altitude;
-		_info.VelZ = VelZ;
 	}
 }
