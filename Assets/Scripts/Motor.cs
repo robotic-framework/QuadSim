@@ -28,6 +28,8 @@ public class Motor : MonoBehaviour
     void Start()
     {
 	    _rigidbody = GetComponent<Rigidbody>();
+	    _rigidbody.angularDrag = 0;
+	    _rigidbody.maxAngularVelocity = 50;
     }
 
     // Update is called once per frame
@@ -36,11 +38,7 @@ public class Motor : MonoBehaviour
         float force = _throttle / 100F - 7;
 	    _rigidbody.AddRelativeForce(new Vector3(0, 1, 0) * force);
 
-        Vector3 torque = Vector3.up;
-        if (Inverse)
-        {
-            torque = Vector3.down;
-        }
-        _rigidbody.AddRelativeTorque(torque * (force * 100));
+        var direction = Inverse ? -1 : 1;
+        _rigidbody.angularVelocity = transform.up * (_throttle * direction * Time.deltaTime);
     }
 }

@@ -144,7 +144,5 @@ public class RCController : MonoBehaviour
 		{
 			_gps.StartNav();
 		}
-
-		Debug.Log(RCCommand[0] + ", " + RCCommand[1] + ", " + RCCommand[2] + ", " + RCCommand[3]);
 	}
 }
